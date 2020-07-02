@@ -99,6 +99,34 @@ services:
             options:
                 fluentd-address: localhost:24224
                 tag: ms-core-forex-service    
+    ms-core-subscription-service:
+        container_name: ms-core-subscription-service
+        build:
+            context: ../ms-core-subscription-service
+            dockerfile: Dockerfile
+        image: com.uta/ms-core-subscription-service:latest
+        expose:
+            - 8124
+        ports:
+            - 8124:8124   
+        environment: 
+            - SPRING_DATASOURCE_URL=jdbc:sqlserver://db:1433;databaseName=subscription_db
+            - SPRING_RABBITMQ_HOST=mq
+        links:
+            - db:db     
+        depends_on:
+            - db
+            - mq
+            - fluentd
+            - elasticsearch
+            - kibana            
+        networks:
+            - core-network
+        logging:
+            driver: "fluentd"
+            options:
+                fluentd-address: localhost:24224
+                tag: ms-core-subscription-service                
 networks:
     core-network:
         driver: bridge
