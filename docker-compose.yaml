@@ -1,0 +1,112 @@
+version: '3.8'
+services:        
+    db:   
+        container_name: mssql-db-server
+        build:
+            context: .
+            dockerfile: Dockerfile.mssql
+        image: mssql-db-server
+        environment: 
+            - ACCEPT_EULA=Y
+            - SA_PASSWORD=yourStrong(!)Password
+        expose:
+            - 1433
+        ports:
+            - 1433:1433    
+        networks:
+            - core-network
+    mq:
+        container_name: rabbitmq-server
+        image:  rabbitmq:3-management
+        expose:
+            - 5672
+            - 15672
+        ports:
+            - 5672:5672    
+            - 15672:15672   
+        networks:
+            - core-network
+    fluentd:
+        container_name: fluentd
+        build:
+            context: .
+            dockerfile: Dockerfile.fluentd
+        volumes:
+            - ./fluentd/conf:/fluentd/etc
+        links:
+            - "elasticsearch"
+        depends_on:
+            - elasticsearch
+        ports:
+            - "24224:24224"
+            - "24224:24224/udp"
+        networks:
+            - core-network    
+    
+    elasticsearch:
+        container_name: elasticsearch
+        image: elasticsearch:7.8.0
+        environment:
+            - node.name=es01
+            #- cluster.name=es-docker-cluster
+            #- discovery.seed_hosts=es02,es03
+            - cluster.initial_master_nodes=es01
+            #- bootstrap.memory_lock=true
+            - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+        expose:
+            - 9200
+        ports:
+            - "9200:9200"
+        networks:
+            - core-network    
+    
+    kibana:
+        container_name: kibana
+        image: kibana:7.8.0    
+        ports:
+            - "5601:5601" 
+        links:
+            - "elasticsearch"
+        depends_on:
+            - elasticsearch    
+        networks:
+            - core-network     
+    ms-core-forex-service:
+        container_name: ms-core-forex-service
+        build:
+            context: ../ms-core-forex-service
+            dockerfile: Dockerfile
+        image: com.uta/ms-core-forex-service:latest
+        expose:
+            - 8125
+        ports:
+            - 8125:8125   
+        environment: 
+            - SPRING_DATASOURCE_URL=jdbc:sqlserver://db:1433;databaseName=forex_db
+            - SPRING_RABBITMQ_HOST=mq
+        links:
+            - db:db     
+        depends_on:
+            - db
+            - mq
+            - fluentd
+            - elasticsearch
+            - kibana            
+        networks:
+            - core-network
+        logging:
+            driver: "fluentd"
+            options:
+                fluentd-address: localhost:24224
+                tag: ms-core-forex-service    
+networks:
+    core-network:
+        driver: bridge
+#volumes:
+#    config-repo:
+#        external: true  
+
+        
+        #https://stackoverflow.com/questions/51050590/run-sql-script-after-start-of-sql-server-on-docker
+
+        #https://docs.fluentd.org/v/0.12/container-deployment/docker-compose

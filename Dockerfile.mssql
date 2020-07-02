@@ -1,0 +1,5 @@
+FROM mcr.microsoft.com/mssql/server:2017-latest
+COPY ./create-db.sql /opt/mssql-scripts/
+ENV ACCEPT_EULA Y
+ENV SA_PASSWORD=yourStrong(!)Password
+RUN (/opt/mssql/bin/sqlservr --accept-eula & sleep 30 && /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'yourStrong(!)Password' -i /opt/mssql-scripts/create-db.sql)

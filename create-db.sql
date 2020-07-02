@@ -1,0 +1,3 @@
+CREATE DATABASE forex_db
+CREATE DATABASE subscription_db
+GO
