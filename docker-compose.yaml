@@ -71,39 +71,11 @@ services:
             - elasticsearch    
         networks:
             - core-network     
-    ms-core-forex-service:
-        container_name: ms-core-forex-service
-        build:
-            context: ../ms-core-forex-service
-            dockerfile: Dockerfile
-        image: com.uta/ms-core-forex-service:latest
-        expose:
-            - 8125
-        ports:
-            - 8125:8125   
-        environment: 
-            - SPRING_DATASOURCE_URL=jdbc:sqlserver://db:1433;databaseName=forex_db
-            - SPRING_RABBITMQ_HOST=mq
-        links:
-            - db:db     
-        depends_on:
-            - db
-            - mq
-            - fluentd
-            - elasticsearch
-            - kibana            
-        networks:
-            - core-network
-        logging:
-            driver: "fluentd"
-            options:
-                fluentd-address: localhost:24224
-                tag: ms-core-forex-service    
     ms-core-subscription-service:
         container_name: ms-core-subscription-service
         build:
             context: ../ms-core-subscription-service
-            dockerfile: Dockerfile
+            dockerfile: Dockerfile.local
         image: com.uta/ms-core-subscription-service:latest
         expose:
             - 8124
@@ -111,6 +83,7 @@ services:
             - 8124:8124   
         environment: 
             - SPRING_DATASOURCE_URL=jdbc:sqlserver://db:1433;databaseName=subscription_db
+            - SERVER_PORT=8124
             - SPRING_RABBITMQ_HOST=mq
         links:
             - db:db     
@@ -126,7 +99,98 @@ services:
             driver: "fluentd"
             options:
                 fluentd-address: localhost:24224
-                tag: ms-core-subscription-service                
+                tag: ms-core-subscription-service
+
+    ms-core-notification-service:
+        container_name: ms-core-notification-service
+        build:
+            context: ../notification-service
+            dockerfile: Dockerfile.local
+        image: com.uta/ms-core-notification-service:latest
+        expose:
+            - 8125
+        ports:
+            - 8125:8125   
+        environment: 
+            - SPRING_DATASOURCE_URL=jdbc:sqlserver://db:1433;databaseName=notification_db
+            - SERVER_PORT=8125
+            - SPRING_RABBITMQ_HOST=mq
+        links:
+            - db:db     
+        depends_on:
+            - db
+            - mq
+            - fluentd
+            - elasticsearch
+            - kibana            
+        networks:
+            - core-network
+        logging:
+            driver: "fluentd"
+            options:
+                fluentd-address: localhost:24224
+                tag: ms-core-notification-service 
+
+    ms-core-forex-service:
+        container_name: ms-core-forex-service
+        build:
+            context: ../ms-core-forex-service
+            dockerfile: Dockerfile.local
+        image: com.uta/ms-core-forex-service:latest
+        expose:
+            - 8126
+        ports:
+            - 8126:8126   
+        environment: 
+            - SPRING_DATASOURCE_URL=jdbc:sqlserver://db:1433;databaseName=forex_db
+            - SERVER_PORT=8126
+            - SPRING_RABBITMQ_HOST=mq
+        links:
+            - db:db     
+        depends_on:
+            - db
+            - mq
+            - fluentd
+            - elasticsearch
+            - kibana            
+        networks:
+            - core-network
+        logging:
+            driver: "fluentd"
+            options:
+                fluentd-address: localhost:24224
+                tag: ms-core-forex-service       
+
+    ms-core-uniqueid-service:
+        container_name: ms-core-uniqueid-service
+        build:
+            context: ../uniqueid-service
+            dockerfile: Dockerfile.local
+        image: com.uta/ms-core-uniqueid-service:latest
+        expose:
+            - 8127
+        ports:
+            - 8127:8127   
+        environment: 
+            - SPRING_DATASOURCE_URL=jdbc:sqlserver://db:1433;databaseName=uniqueid_db
+            - SERVER_PORT=8127
+            - SPRING_RABBITMQ_HOST=mq
+        links:
+            - db:db     
+        depends_on:
+            - db
+            - mq
+            - fluentd
+            - elasticsearch
+            - kibana            
+        networks:
+            - core-network
+        logging:
+            driver: "fluentd"
+            options:
+                fluentd-address: localhost:24224
+                tag: ms-core-uniqueid-service        
+                                                                                         
 networks:
     core-network:
         driver: bridge
