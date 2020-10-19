@@ -190,6 +190,19 @@ services:
             options:
                 fluentd-address: localhost:24224
                 tag: ms-core-uniqueid-service        
+    allure:
+        container_name: allure-service
+        image: "frankescobar/allure-docker-service"
+        networks:
+            - core-network
+        environment:
+            CHECK_RESULTS_EVERY_SECONDS: 30
+            KEEP_HISTORY: 1
+        ports:
+            - 5050:5050
+        volumes:
+            - ../core-api-tests/allure-results:/app/allure-results
+            - ../core-api-tests/allure-reports:/app/default-reports
                                                                                          
 networks:
     core-network:
