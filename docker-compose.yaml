@@ -196,12 +196,12 @@ services:
         networks:
             - core-network
         environment:
-            CHECK_RESULTS_EVERY_SECONDS: 30
+            CHECK_RESULTS_EVERY_SECONDS: 60
             KEEP_HISTORY: 1
         ports:
             - 5050:5050
         volumes:
-            - ../core-api-tests/allure-results:/app/allure-results
+            - ../core-api-tests/target/allure-results:/app/allure-results
             - ../core-api-tests/allure-reports:/app/default-reports
                                                                                          
 networks:
@@ -213,5 +213,4 @@ networks:
 
         
         #https://stackoverflow.com/questions/51050590/run-sql-script-after-start-of-sql-server-on-docker
-
         #https://docs.fluentd.org/v/0.12/container-deployment/docker-compose
